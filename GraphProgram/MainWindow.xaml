@@ -3,14 +3,112 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:GraphProgram"
         mc:Ignorable="d"
-        Title="Dynamic Graph" Height="450" Width="800" Icon="unknown_2.png">
-    <Canvas x:Name="MainCanvas" Background="LightGray">
-        <Button Content="Задати" Canvas.Left="80" Canvas.Top="38" Click="Button_Click" HorizontalAlignment="Left" VerticalAlignment="Center" Width="48"/>
-        <Label Content="n =" Canvas.Left="10" Canvas.Top="35" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-        <TextBox x:Name="CountOfV" Canvas.Left="38" TextWrapping="Wrap" Text="10" Canvas.Top="39" Width="20" HorizontalAlignment="Left" VerticalAlignment="Center" Height="18" />
-    </Canvas>
+        Title="Graph Visualizer" 
+        WindowStartupLocation="CenterScreen"
+        Height="1020" Width="1920"
+        Icon="unknown_2.png"
+        Background="#F0F4F8">
 
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#4F46E5"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="12 8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="10" Color="#4F46E566"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#4338CA"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="0" BlurRadius="15" Color="#4F46E599"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="MatrixTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E7FF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#4F46E5"/>
+                </Trigger>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="BorderBrush" Value="#4F46E5"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect BlurRadius="10" Color="#4F46E533"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
+        <Style TargetType="Label">
+            <Setter Property="Foreground" Value="#1E293B"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- Sidebar Panel -->
+        <Border Width="300" Background="White" Panel.ZIndex="1" Margin="1600,28,20,659">
+            <StackPanel Margin="16" >
+                <TextBlock Text="Graph Settings" FontSize="20" FontWeight="Bold"
+                           Foreground="#1E293B" Margin="0 0 0 16"/>
+
+                <StackPanel>
+                    <Label Content="Number of Vertices"/>
+                    <TextBox x:Name="CountOfV" Text="5"/>
+                    <Button x:Name="GenerateButton" Content="Generate Graph" 
+                            Margin="0 16 0 0" Click="Button_Click"
+                            Background="#4F46E5" Foreground="White"/>
+                </StackPanel>
+
+                <Separator Background="#E0E7FF"/>
+
+                <StackPanel>
+                    <TextBlock Text="Instructions" FontWeight="SemiBold"
+                               Foreground="#64748B" Margin="0 0 0 8"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="#64748B"
+                               Text="1. Enter number of vertices
+2. Click Generate to create graph
+3. Edit adjacency matrix
+4. Drag nodes to reorganize"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Canvas -->
+        <Canvas x:Name="MainCanvas" Margin="320 20 20 20" Background="White"
+                ClipToBounds="True">
+            <Canvas.Effect>
+                <DropShadowEffect BlurRadius="25" Color="#1E293B0D"/>
+            </Canvas.Effect>
+        </Canvas>
+    </Grid>
 </Window>

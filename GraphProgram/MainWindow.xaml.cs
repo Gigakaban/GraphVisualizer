@@ -17,28 +17,39 @@ using System.Xml.Linq;
 using System.Threading;
 using System.Diagnostics.Eventing.Reader;
 using System.Security.Cryptography.X509Certificates;
+using System.Windows.Media.Effects;
 
 namespace GraphProgram
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
+    /// 
+
+    public static class ColorHelper
+    {
+        public static Color WithOpacity(this Color color, double opacity)
+        {
+            return Color.FromArgb((byte)(255 * opacity), color.R, color.G, color.B);
+        }
+    }
+
     public partial class MainWindow : Window
     {
         private bool isDragging = false;
         private Point clickPosition;
         private Canvas currentDraggingNode;
-        private Dictionary<string,Canvas> vertices= new Dictionary<string,Canvas>();
+        private Dictionary<string, Canvas> vertices = new Dictionary<string, Canvas>();
         private List<ArrowConnection> connections = new List<ArrowConnection>();
         private List<TextBox> textBoxes = new List<TextBox>();
         private List<Label> labels = new List<Label>();
         List<Brush> brushList = new List<Brush>
         {
-            Brushes.Black,        
-            Brushes.Blue,         
-            Brushes.Green,        
-            Brushes.Red,         
-            Brushes.Cyan,         
+            Brushes.Black,
+            Brushes.Blue,
+            Brushes.Green,
+            Brushes.Red,
+            Brushes.Cyan,
             Brushes.Purple,
             Brushes.Azure,
             Brushes.Brown,
@@ -48,57 +59,72 @@ namespace GraphProgram
         public MainWindow()
         {
             InitializeComponent();
-
+            
         }
 
         private void CreateDynamicTable(int n)
         {
             int startX = 100;
             int startY = 100;
-            for(int i = 0;i!=n;i++)
+
+            Label title = new Label
             {
-                for (int j = 0;j!=n;j++)
+                Content = "Adjacency Matrix",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Black
+            };
+            Canvas.SetLeft(title, startX);
+            Canvas.SetTop(title, startY - 60);
+            MainCanvas.Children.Add(title);
+
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
                 {
-                    if(i==0)
+                    if (i == 0)
                     {
                         Label lb = new Label
                         {
                             Width = 30,
                             Height = 30,
                             Content = $"V{j + 1}",
-                            FontSize = 12
+                            FontSize = 16
                         };
-                        Canvas.SetLeft(lb, startX + (j * 21));
+                        Canvas.SetLeft(lb, startX + (j * 47));
                         Canvas.SetTop(lb, startX - 21);
                         labels.Add(lb);
                         MainCanvas.Children.Add(lb);
                     }
 
-                    if(j==0)
+                    if (j == 0)
                     {
                         Label lb = new Label
                         {
                             Width = 30,
                             Height = 30,
                             Content = $"V{i + 1}",
-                            FontSize = 12
+                            FontSize = 16
                         };
                         Canvas.SetLeft(lb, startX - 30);
-                        Canvas.SetTop(lb, startX + (i * 21));
+                        Canvas.SetTop(lb, startX + (i * 36));
                         labels.Add(lb);
                         MainCanvas.Children.Add(lb);
                     }
+
                     TextBox tb = new TextBox
                     {
-                        Width = 20,
-                        Height = 20,
-                        Name = $"V{j+1}_V{i+1}"
+                        Style = (Style)FindResource("MatrixTextBox"),
+                        Text = "0",
+                        Name = $"V{i + 1}_V{j + 1}"
                     };
-                    Canvas.SetLeft(tb, startX+(i*21));
-                    Canvas.SetTop(tb, startY+(j*21));
+
+                    Canvas.SetLeft(tb, startX + j * 45);
+                    Canvas.SetTop(tb, startY + i * 35);
+
                     tb.TextChanged += (sender, e) => OnTbTextChanged(sender);
-                    textBoxes.Add(tb);
                     MainCanvas.Children.Add(tb);
+                    textBoxes.Add(tb);
                 }
             }
         }
@@ -133,22 +159,22 @@ namespace GraphProgram
             if (textBox != null)
             {
                 string[] vertices = textBox.Name.Split('_');
-                if(int.TryParse(textBox.Text, out int n))
+                if (int.TryParse(textBox.Text, out int n))
                 {
-                    if(n == 0)
+                    if (n == 0)
                     {
                         RemoveOldLine(vertices);
-                        
+
                     }
                     else
                     {
                         RemoveOldLine(vertices);
-                        CreateDynamicArrow(vertices[0], vertices[1],n);
+                        CreateDynamicArrow(vertices[0], vertices[1], n);
                     }
                 }
                 else
                 {
-                    if(textBox.Text == "")
+                    if (textBox.Text == "")
                     {
                         RemoveOldLine(vertices);
                     }
@@ -173,7 +199,7 @@ namespace GraphProgram
             Canvas from = vertices[fr];
             Canvas to = vertices[t];
             Brush ultiBrush = null;
-            for(int i =0; i!= countOfLines;i++)
+            for (int i = 0; i != countOfLines; i++)
             {
                 try
                 {
@@ -228,7 +254,7 @@ namespace GraphProgram
 
             if (label != null)
             {
-                connection.Label = label; 
+                connection.Label = label;
             }
 
             connection.Update();
@@ -238,41 +264,52 @@ namespace GraphProgram
 
         private Canvas CreateVerticeWithLabel(double x, double y, int number)
         {
-            double size = 50;
+            double size = 60;
 
             Canvas nodeCanvas = new Canvas
             {
                 Width = size,
                 Height = size,
                 Background = Brushes.Transparent,
-                Tag = number 
+                Tag = number
             };
+
+            Color c = Color.FromRgb(0x4F, 0x46, 0xE5);
+            SolidColorBrush eBrush = new SolidColorBrush(c);
 
             Ellipse ellipse = new Ellipse
             {
                 Width = size,
                 Height = size,
-                Fill = Brushes.Transparent,
-                Stroke = Brushes.Black,
-                StrokeThickness = 2
+                Fill = eBrush,
+                Stroke = Brushes.White,
+                StrokeThickness = 3,
+                Effect = new DropShadowEffect
+                {
+                    Color = Colors.Black.WithOpacity(0.2),
+                    BlurRadius = 10,
+                    ShadowDepth = 3
+                }
             };
-            Canvas.SetLeft(ellipse, 0);
-            Canvas.SetTop(ellipse, 0);
-            nodeCanvas.Children.Add(ellipse);
+
+
+
+
 
             TextBlock label = new TextBlock
             {
                 Text = "V" + number,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.Black
+                FontWeight = FontWeights.SemiBold,
+                Foreground = Brushes.White,
+                FontSize = 16
             };
 
-            label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-            Size textSize = label.DesiredSize;
+            Canvas.SetLeft(label, (size - label.ActualWidth-20) / 2);
+            Canvas.SetTop(label, (size - label.ActualHeight-20) / 2);
 
-            Canvas.SetLeft(label, (size - textSize.Width) / 2);
-            Canvas.SetTop(label, (size - textSize.Height) / 2);
+            nodeCanvas.Children.Add(ellipse);
             nodeCanvas.Children.Add(label);
+
 
             Canvas.SetLeft(nodeCanvas, x);
             Canvas.SetTop(nodeCanvas, y);
@@ -285,6 +322,8 @@ namespace GraphProgram
 
             return nodeCanvas;
         }
+
+
 
         private void Node_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -321,7 +360,7 @@ namespace GraphProgram
                     }
                 }
             }
-            
+
         }
 
         private void Node_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -344,7 +383,7 @@ namespace GraphProgram
         {
             if (int.TryParse(input, out int n))
             {
-                if (n <= 19 && n > 1)
+                if (n <= 10 && n > 1)
                 {
                     foreach (var tb in textBoxes)
                     {
@@ -358,7 +397,7 @@ namespace GraphProgram
                     {
                         MainCanvas.Children.Remove(l);
                     }
-                    foreach(var c in connections)
+                    foreach (var c in connections)
                     {
                         MainCanvas.Children.Remove(c.Label);
                         MainCanvas.Children.Remove(c.Line);
@@ -375,12 +414,12 @@ namespace GraphProgram
                 }
                 else
                 {
-                    MessageBox.Show($"Кількість вершин 2-10");
+                    MessageBox.Show($"Vertices count 2-10");
                 }
             }
             else
             {
-                MessageBox.Show($"Кількість вершин 2-10");
+                MessageBox.Show($"Vertices count 2-10");
             }
         }
 
@@ -506,7 +545,7 @@ namespace GraphProgram
 
                             Vector orthogonal = new Vector(-direction1.Y, direction1.X);
 
-                            double offset = 15; 
+                            double offset = 15;
                             labelX += orthogonal.X * offset;
                             labelY += orthogonal.Y * offset;
 
@@ -517,32 +556,32 @@ namespace GraphProgram
 
                     Point center1 = new Point(Canvas.GetLeft(FromNode) + FromNode.Width / 2,
                                                   Canvas.GetTop(FromNode) + FromNode.Height / 2);
-                        Point center2 = new Point(Canvas.GetLeft(ToNode) + ToNode.Width / 2,
-                                                  Canvas.GetTop(ToNode) + ToNode.Height / 2);
+                    Point center2 = new Point(Canvas.GetLeft(ToNode) + ToNode.Width / 2,
+                                              Canvas.GetTop(ToNode) + ToNode.Height / 2);
 
-                        Vector direction = center2 - center1;
-                        direction.Normalize();
+                    Vector direction = center2 - center1;
+                    direction.Normalize();
 
-                        double radius = FromNode.Width / 2;
-                        Point start = center1 + direction * radius;
-                        Point end = center2 - direction * radius;
+                    double radius = FromNode.Width / 2;
+                    Point start = center1 + direction * radius;
+                    Point end = center2 - direction * radius;
 
-                        Line.X1 = start.X;
-                        Line.Y1 = start.Y;
-                        Line.X2 = end.X;
-                        Line.Y2 = end.Y;
+                    Line.X1 = start.X;
+                    Line.Y1 = start.Y;
+                    Line.X2 = end.X;
+                    Line.Y2 = end.Y;
 
 
-                        Vector ortho = new Vector(-direction.Y, direction.X);
-                        Point p1 = end;
-                        Point p2 = end - direction * 10 + ortho * 5;
-                        Point p3 = end - direction * 10 - ortho * 5;
+                    Vector ortho = new Vector(-direction.Y, direction.X);
+                    Point p1 = end;
+                    Point p2 = end - direction * 10 + ortho * 5;
+                    Point p3 = end - direction * 10 - ortho * 5;
 
-                        ArrowHead.Points.Clear();
-                        ArrowHead.Points.Add(p1);
-                        ArrowHead.Points.Add(p2);
-                        ArrowHead.Points.Add(p3);
-                    
+                    ArrowHead.Points.Clear();
+                    ArrowHead.Points.Add(p1);
+                    ArrowHead.Points.Add(p2);
+                    ArrowHead.Points.Add(p3);
+
                 }
             }
         }
